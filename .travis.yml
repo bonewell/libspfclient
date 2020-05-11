@@ -1,0 +1,50 @@
+language: cpp
+matrix:
+    include:
+        - os: osx
+          osx_image: xcode11.3
+          compiler: clang
+          install:
+              - pip install conan
+              - conan user
+          script:
+              - conan install . --build missing
+              - cmake .
+              - cmake --build .
+              - ctest
+        - os: linux
+          dist: bionic
+          compiler: gcc
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-test
+                  packages:
+                      - g++-9
+          env:
+              - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
+          install:
+              - pip install --user conan
+              - conan user
+          script:
+              - conan install . -s compiler.libcxx=libstdc++11 --build missing
+              - cmake .
+              - cmake --build .
+              - ctest
+          before_install:
+              - eval "${MATRIX_EVAL}"
+        - os: windows
+          env: 
+              - PATH=/c/Python38:/c/Python38/Scripts:$PATH
+              - MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+          before_install:
+              - choco install python --version 3.8.2
+              - python -m pip install --upgrade pip
+          install:
+              - pip install conan
+          script:
+              - export PATH=$MSBUILD_PATH:$PATH
+              - conan install . -s compiler="Visual Studio" -s compiler.version=15 --build missing
+              - cmake -G "Visual Studio 15 2017 Win64" .
+              - cmake --build . --config Release
+              - ctest -C Release
