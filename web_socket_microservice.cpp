@@ -30,7 +30,6 @@ WebSocketMicroservice::WebSocketMicroservice(const std::string &host,
 }
 
 WebSocketMicroservice::~WebSocketMicroservice() {
-  thread_.join();
 }
 
 std::string WebSocketMicroservice::invoke(std::string const& request) {

@@ -1,9 +1,11 @@
 #include <iostream>
 
 #include "graph.h"
+#include "web_socket_microservice.h"
 
 int main() {
-  Graph g;
+  WebSocketMicroservice service{"localhost", 8080};
+  Graph g{service};
   g.addVertex(); g.addVertex(); g.addVertex(); g.addVertex();
   g.addVertex(); g.addVertex();
   g.setEdge(0, 1, 7); g.setEdge(0, 2, 9); g.setEdge(0, 5, 14);

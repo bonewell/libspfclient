@@ -23,6 +23,20 @@ target_include_directories(objlib
 add_library(${PROJECT_NAME}_static STATIC $<TARGET_OBJECTS:objlib>)
 add_library(SPF::client_static ALIAS ${PROJECT_NAME}_static)
 
+enable_testing()
+
+set(UNIT_TEST ${PROJECT_NAME}_unittest)
+add_executable(${UNIT_TEST}
+  "graph.cpp"
+  "graph_test.cpp"
+)
+target_compile_features(${UNIT_TEST} PRIVATE cxx_std_17)
+target_link_libraries(${UNIT_TEST} PRIVATE
+  CONAN_PKG::gtest
+  CONAN_PKG::boost
+)
+add_test(NAME ${UNIT_TEST} COMMAND ${UNIT_TEST})
+
 add_executable(${PROJECT_NAME}_cmd
   "main.cpp"
 )
