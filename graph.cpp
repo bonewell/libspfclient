@@ -22,6 +22,11 @@ ptree::ptree Graph::invoke(ptree::ptree const& request) {
   std::istringstream iss{output};
   ptree::ptree response;
   json::read_json(iss, response);
+
+  auto error = response.get_optional<std::string>("error");
+  if (error) {
+    throw Error{*error};
+  }
   return response;
 }
 
@@ -32,14 +37,28 @@ Id Graph::addVertex() {
   return response.get<Id>("id");
 }
 
-bool Graph::setEdge(Id from, Id to, Weight weight) {
+void Graph::removeVertex(Id id) {
+  ptree::ptree request;
+  request.put("action", "RemoveVertex");
+  request.put("id", id);
+  invoke(request);
+}
+
+void Graph::setEdge(Id from, Id to, Weight weight) {
   ptree::ptree request;
   request.put("action", "AddEdge");
   request.put("from", from);
   request.put("to", to);
   request.put("weight", weight);
-  auto response = invoke(request);
-  return true;
+  invoke(request);
+}
+
+void Graph::removeEdge(Id from, Id to) {
+  ptree::ptree request;
+  request.put("action", "RemoveEdge");
+  request.put("from", from);
+  request.put("to", to);
+  invoke(request);
 }
 
 std::list<Id> Graph::path(Id from, Id to) {
