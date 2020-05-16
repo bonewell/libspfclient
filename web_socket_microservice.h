@@ -9,17 +9,19 @@ namespace net = boost::asio;
 namespace beast = boost::beast;
 namespace ws = beast::websocket;
 
+namespace spf {
 class WebSocketMicroservice: public Microservice {
 public:
   WebSocketMicroservice(std::string const& host, int port);
   ~WebSocketMicroservice();
   std::string invoke(std::string const& request) override;
   void async_invoke(std::string const& request,
-                    std::function<void(std::string)> handler) override;
-  void run() { ioc_.run(); }
+      std::function<void(std::string, beast::error_code)> handler) override;
+
 private:
   net::io_context ioc_;
   ws::stream<beast::tcp_stream> wsock_{ioc_};
 };
+}  // namespace spf
 
 #endif /* WEB_SOCKET_MICROSERVICE_H_ */

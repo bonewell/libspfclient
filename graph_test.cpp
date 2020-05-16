@@ -9,6 +9,8 @@ using ::testing::Eq;
 using ::testing::ContainerEq;
 using ::testing::Return;
 
+using namespace spf;
+
 TEST(Graph, AddVertex) {
   MockMicroservice mock;
   Graph g{mock};
@@ -25,7 +27,7 @@ TEST(Graph, AddVertexWithError) {
 
   EXPECT_CALL(mock, invoke(_)).WillOnce(Return(R"({"error":"Internal error"})"));
 
-  EXPECT_THROW(g.addVertex(), Graph::Error);
+  EXPECT_THROW(g.addVertex(), Error);
 }
 
 TEST(Graph, RemoveVertex) {
@@ -44,7 +46,7 @@ TEST(Graph, RemoveVertexWithError) {
 
   EXPECT_CALL(mock, invoke(_)).WillOnce(Return(R"({"error":"Wrong ID"})"));
 
-  EXPECT_THROW(g.removeVertex(100), Graph::Error);
+  EXPECT_THROW(g.removeVertex(100), Error);
 }
 
 TEST(Graph, SetEdge) {
@@ -64,7 +66,7 @@ TEST(Graph, SetEdgeWithError) {
 
   EXPECT_CALL(mock, invoke(_)).WillOnce(Return(R"({"error":"Wrong vertex ID"})"));
 
-  EXPECT_THROW(g.setEdge(100, 2, 7), Graph::Error);
+  EXPECT_THROW(g.setEdge(100, 2, 7), Error);
 }
 
 TEST(Graph, RemoveEdge) {
@@ -84,7 +86,7 @@ TEST(Graph, RemoveEdgeWithError) {
 
   EXPECT_CALL(mock, invoke(_)).WillOnce(Return(R"({"error":"Wrong vertex ID"})"));
 
-  EXPECT_THROW(g.removeEdge(100, 2), Graph::Error);
+  EXPECT_THROW(g.removeEdge(100, 2), Error);
 }
 
 TEST(Graph, GetPath) {
@@ -103,5 +105,148 @@ TEST(Graph, GetPathWithError) {
 
   EXPECT_CALL(mock, invoke(_)).WillOnce(Return(R"({"error":"Wrong ID"})"));
 
-  EXPECT_THROW(g.path(0, 4), Graph::Error);
+  EXPECT_THROW(g.path(0, 4), Error);
+}
+
+TEST(Graph, AddVertexAsync) {
+  MockMicroservice mock;
+  Graph g{mock};
+
+  EXPECT_CALL(mock, async_invoke(R"({"action":"AddVertex"})", _))
+      .WillOnce([](auto, auto callback) {
+        callback(R"({"id":"1"})", {});
+      });
+
+  g.addVertex([](Id id, auto) {
+    EXPECT_THAT(id, Eq(1));
+  });
+}
+
+TEST(Graph, AddVertexAsyncWithError) {
+  MockMicroservice mock;
+  Graph g{mock};
+
+  EXPECT_CALL(mock, async_invoke(_, _))
+      .WillOnce([](auto, auto callback) {
+        callback(R"({"vertex":"1"})", {});
+      });
+
+  g.addVertex([](Id id, auto error) {
+    EXPECT_THAT(bool{error}, Eq(true));
+  });
+}
+
+TEST(Graph, RemoveVertexAsync) {
+  MockMicroservice mock;
+  Graph g{mock};
+
+  EXPECT_CALL(mock, async_invoke(R"({"action":"RemoveVertex","id":"1"})", _))
+      .WillOnce([](auto, auto callback) {
+        callback(R"({})", {});
+      });
+
+  g.removeVertex(1, [](auto error) {
+    EXPECT_THAT(bool{error}, Eq(false));
+  });
+}
+
+TEST(Graph, RemoveVertexAsyncWithError) {
+  MockMicroservice mock;
+  Graph g{mock};
+
+  EXPECT_CALL(mock, async_invoke(_, _))
+      .WillOnce([](auto, auto callback) {
+        callback(R"({"error":"Internal error"})", {});
+      });
+
+  g.removeVertex(100, [](auto error) {
+    EXPECT_THAT(bool{error}, Eq(true));
+  });
+}
+
+TEST(Graph, SetEdgeAsync) {
+  MockMicroservice mock;
+  Graph g{mock};
+
+  EXPECT_CALL(mock,
+      async_invoke(R"({"action":"AddEdge","from":"0","to":"1","weight":"7"})", _))
+      .WillOnce([](auto, auto callback) {
+        callback(R"({})", {});
+      });
+
+  g.setEdge(0, 1, 7, [](auto error) {
+    EXPECT_THAT(bool{error}, Eq(false));
+  });
+}
+
+TEST(Graph, SetEdgeAsyncWithError) {
+  MockMicroservice mock;
+  Graph g{mock};
+
+  EXPECT_CALL(mock, async_invoke(_, _))
+      .WillOnce([](auto, auto callback) {
+        callback(R"({"error":"Internal error"})", {});
+      });
+
+  g.setEdge(0, 1, -3.4, [](auto error) {
+    EXPECT_THAT(bool{error}, Eq(true));
+  });
+}
+
+TEST(Graph, RemoveEdgeAsync) {
+  MockMicroservice mock;
+  Graph g{mock};
+
+  EXPECT_CALL(mock,
+      async_invoke(R"({"action":"RemoveEdge","from":"0","to":"1"})", _))
+      .WillOnce([](auto, auto callback) {
+        callback(R"({})", {});
+      });
+
+  g.removeEdge(0, 1, [](auto error) {
+    EXPECT_THAT(bool{error}, Eq(false));
+  });
+}
+
+TEST(Graph, RemoveEdgeAsyncWithError) {
+  MockMicroservice mock;
+  Graph g{mock};
+
+  EXPECT_CALL(mock, async_invoke(_, _))
+      .WillOnce([](auto, auto callback) {
+        callback(R"({"error":"Internal error"})", {});
+      });
+
+  g.removeEdge(0, 1, [](auto error) {
+    EXPECT_THAT(bool{error}, Eq(true));
+  });
+}
+
+TEST(Graph, GetPathAsync) {
+  MockMicroservice mock;
+  Graph g{mock};
+
+  EXPECT_CALL(mock,
+      async_invoke(R"({"action":"GetPath","from":"0","to":"4"})", _))
+      .WillOnce([](auto, auto callback) {
+        callback(R"({"ids":["0","2","4"]})", {});
+      });
+
+  g.path(0, 4, [](auto ids, auto) {
+    EXPECT_THAT(ids, ContainerEq(std::list<Id>{0, 2, 4}));
+  });
+}
+
+TEST(Graph, GetPathAsyncWithError) {
+  MockMicroservice mock;
+  Graph g{mock};
+
+  EXPECT_CALL(mock, async_invoke(_, _))
+      .WillOnce([](auto, auto callback) {
+        callback(R"({"vertexes":["0","4"]})", {});
+      });
+
+  g.path(0, 4, [](auto, auto error) {
+    EXPECT_THAT(bool{error}, Eq(true));
+  });
 }

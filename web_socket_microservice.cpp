@@ -12,12 +12,7 @@ using tcp = net::ip::tcp;
 namespace beast = boost::beast;
 namespace ws = beast::websocket;
 
-namespace {
-void fail(beast::error_code ec, char const* what) {
-  std::cerr << what << ": " << ec.message() << '\n';
-}
-}  // namespace
-
+namespace spf {
 WebSocketMicroservice::WebSocketMicroservice(const std::string &host,
     int port) {
   tcp::resolver resolver{ioc_};
@@ -40,17 +35,18 @@ std::string WebSocketMicroservice::invoke(std::string const& request) {
 }
 
 void WebSocketMicroservice::async_invoke(std::string const& request,
-    std::function<void(std::string)> handler) {
-//  net::spawn(ioc_, [this, request, handler](auto yield) {
-//    beast::error_code ec;
-//    auto obuf = net::buffer(request);
-//    wsock_.async_write(obuf, yield[ec]);
-//    if (ec) return fail(ec, "write");
-//    beast::flat_buffer ibuf;
-//    wsock_.async_read(ibuf, yield[ec]);
-//    if (ec == ws::error::closed) return;
-//    if (ec) return fail(ec, "read");
-//    auto response = beast::buffers_to_string(ibuf.data());
-//    handler(response);
-//  });
+    std::function<void(std::string, beast::error_code)> handler) {
+  net::spawn(ioc_, [this, request, handler](auto yield) {
+    beast::error_code ec;
+    auto obuf = net::buffer(request);
+    wsock_.async_write(obuf, yield[ec]);
+    if (ec) return handler("", ec);
+    beast::flat_buffer ibuf;
+    wsock_.async_read(ibuf, yield[ec]);
+    if (ec == ws::error::closed) return;
+    if (ec) return handler("", ec);
+    auto response = beast::buffers_to_string(ibuf.data());
+    handler(response, {});
+  });
 }
+}  // namespace spf
