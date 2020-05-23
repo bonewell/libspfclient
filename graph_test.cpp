@@ -117,9 +117,9 @@ TEST(Graph, AddVertexAsync) {
         callback(R"({"id":"1"})", {});
       });
 
-  g.addVertex([](Id id, auto) {
-    EXPECT_THAT(id, Eq(1));
-  });
+  Id expected;
+  g.addVertex([&expected](Id id, auto) { expected = id; });
+  EXPECT_THAT(expected, Eq(1));
 }
 
 TEST(Graph, AddVertexAsyncWithError) {
@@ -131,9 +131,9 @@ TEST(Graph, AddVertexAsyncWithError) {
         callback(R"({"vertex":"1"})", {});
       });
 
-  g.addVertex([](Id id, auto error) {
-    EXPECT_THAT(bool{error}, Eq(true));
-  });
+  Error expected;
+  g.addVertex([&expected](Id, auto error) { expected = error; });
+  EXPECT_THAT(bool{expected}, Eq(true));
 }
 
 TEST(Graph, RemoveVertexAsync) {
@@ -145,9 +145,9 @@ TEST(Graph, RemoveVertexAsync) {
         callback(R"({})", {});
       });
 
-  g.removeVertex(1, [](auto error) {
-    EXPECT_THAT(bool{error}, Eq(false));
-  });
+  Error expected;
+  g.removeVertex(1, [&expected](auto error) { expected = error; });
+  EXPECT_THAT(bool{expected}, Eq(false));
 }
 
 TEST(Graph, RemoveVertexAsyncWithError) {
@@ -159,9 +159,9 @@ TEST(Graph, RemoveVertexAsyncWithError) {
         callback(R"({"error":"Internal error"})", {});
       });
 
-  g.removeVertex(100, [](auto error) {
-    EXPECT_THAT(bool{error}, Eq(true));
-  });
+  Error expected;
+  g.removeVertex(100, [&expected](auto error) { expected = error; });
+  EXPECT_THAT(bool{expected}, Eq(true));
 }
 
 TEST(Graph, SetEdgeAsync) {
@@ -174,9 +174,9 @@ TEST(Graph, SetEdgeAsync) {
         callback(R"({})", {});
       });
 
-  g.setEdge(0, 1, 7, [](auto error) {
-    EXPECT_THAT(bool{error}, Eq(false));
-  });
+  Error expected;
+  g.setEdge(0, 1, 7, [&expected](auto error) { expected = error; });
+  EXPECT_THAT(bool{expected}, Eq(false));
 }
 
 TEST(Graph, SetEdgeAsyncWithError) {
@@ -188,9 +188,9 @@ TEST(Graph, SetEdgeAsyncWithError) {
         callback(R"({"error":"Internal error"})", {});
       });
 
-  g.setEdge(0, 1, -3.4, [](auto error) {
-    EXPECT_THAT(bool{error}, Eq(true));
-  });
+  Error expected;
+  g.setEdge(0, 1, -3.4, [&expected](auto error) { expected = error; });
+  EXPECT_THAT(bool{expected}, Eq(true));
 }
 
 TEST(Graph, RemoveEdgeAsync) {
@@ -203,9 +203,9 @@ TEST(Graph, RemoveEdgeAsync) {
         callback(R"({})", {});
       });
 
-  g.removeEdge(0, 1, [](auto error) {
-    EXPECT_THAT(bool{error}, Eq(false));
-  });
+  Error expected;
+  g.removeEdge(0, 1, [&expected](auto error) { expected = error; });
+  EXPECT_THAT(bool{expected}, Eq(false));
 }
 
 TEST(Graph, RemoveEdgeAsyncWithError) {
@@ -217,9 +217,9 @@ TEST(Graph, RemoveEdgeAsyncWithError) {
         callback(R"({"error":"Internal error"})", {});
       });
 
-  g.removeEdge(0, 1, [](auto error) {
-    EXPECT_THAT(bool{error}, Eq(true));
-  });
+  Error expected;
+  g.removeEdge(0, 1, [&expected](auto error) { expected = error; });
+  EXPECT_THAT(bool{expected}, Eq(true));
 }
 
 TEST(Graph, GetPathAsync) {
@@ -232,9 +232,9 @@ TEST(Graph, GetPathAsync) {
         callback(R"({"ids":["0","2","4"]})", {});
       });
 
-  g.path(0, 4, [](auto ids, auto) {
-    EXPECT_THAT(ids, ContainerEq(std::list<Id>{0, 2, 4}));
-  });
+  std::list<Id> expected;
+  g.path(0, 4, [&expected](auto ids, auto) { expected = ids; });
+  EXPECT_THAT(expected, ContainerEq(std::list<Id>{0, 2, 4}));
 }
 
 TEST(Graph, GetPathAsyncWithError) {
@@ -246,7 +246,7 @@ TEST(Graph, GetPathAsyncWithError) {
         callback(R"({"vertexes":["0","4"]})", {});
       });
 
-  g.path(0, 4, [](auto, auto error) {
-    EXPECT_THAT(bool{error}, Eq(true));
-  });
+  Error expected;
+  g.path(0, 4, [&expected](auto, auto error) { expected = error; });
+  EXPECT_THAT(bool{expected}, Eq(true));
 }

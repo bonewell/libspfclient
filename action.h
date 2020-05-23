@@ -15,13 +15,56 @@
 namespace ptree = boost::property_tree;
 namespace json = boost::property_tree::json_parser;
 
+namespace {
+std::string request(ptree::ptree input) {
+  std::ostringstream oss;
+  json::write_json_helper(oss, input, 0, false);
+  return oss.str();
+}
+
+ptree::ptree response(std::string output) {
+  std::istringstream iss{output};
+  ptree::ptree response;
+  json::read_json(iss, response);
+  return response;
+}
+
+void check(ptree::ptree const& response) {
+  auto error = response.get_optional<std::string>("error");
+  if (error) {
+    throw spf::Error{*error};
+  }
+}
+}  // namespace
+
 namespace spf {
+template <typename T>
+class Response {
+public:
+  using Output = T;
+  using Callback = std::function<void(Output, Error)>;
+  Response(Callback callback) : callback_{callback} {}
+  virtual ~Response() = default;
+  void operator()(ptree::ptree output, Error error) const {
+    try {
+      callback_(get(std::move(output)), std::move(error));
+    } catch (std::exception const& error) {
+      callback_({}, Error{error.what()});
+    } catch (...) {
+      callback_({}, Error{"Unknown error"});
+    }
+  }
+private:
+  virtual Output get(ptree::ptree output) const = 0;
+  Callback callback_;
+};
+
 class ActionBase {
 public:
   virtual ~ActionBase() = default;
 
   ptree::ptree invoke(Microservice& service) {
-    auto res = response(service.invoke(request()));
+    auto res = response(service.invoke(request(input_)));
     check(res);
     return res;
   }
@@ -29,8 +72,8 @@ public:
   void async_invoke(Microservice& service,
       std::function<void(ptree::ptree)> response_handler,
       std::function<void(Error)> error_handler) try {
-    service.async_invoke(request(),
-        [this, response_handler, error_handler](auto output, auto error) {
+    service.async_invoke(request(input_),
+        [response_handler, error_handler](auto output, auto error) {
       if (error) return error_handler(Error{error.message()});
       try {
         auto res = response(output);
@@ -49,28 +92,7 @@ public:
   }
 
 protected:
-  ptree::ptree request_;
-
-private:
-  std::string request() {
-    std::ostringstream oss;
-    json::write_json_helper(oss, request_, 0, false);
-    return oss.str();
-  }
-
-  ptree::ptree response(std::string output) {
-    std::istringstream iss{output};
-    ptree::ptree response;
-    json::read_json(iss, response);
-    return response;
-  }
-
-  void check(ptree::ptree const& response) {
-    auto error = response.get_optional<std::string>("error");
-    if (error) {
-      throw Error{*error};
-    }
-  }
+  ptree::ptree input_;
 };
 
 template<typename T>
@@ -79,16 +101,17 @@ public:
   using Output = T;
 
   virtual ~Action() = default;
-  virtual Output get(ptree::ptree response) = 0;
+  virtual Output get(ptree::ptree output) const = 0;
 
   Output execute(Microservice& service) {
     return get(invoke(service));
   }
 
+  template<typename C>
   void execute(Microservice& service,
-      std::function<void(Output, Error)> callback) {
+      C callback) {
     async_invoke(service,
-        [this, callback](auto res) { callback(get(std::move(res)), {}); },
+        [callback](auto res) { callback(std::move(res), {}); },
         [callback](auto error) { callback({}, error); });
   }
 };
@@ -111,53 +134,73 @@ public:
 class AddVertex : public Action<Id> {
 public:
   AddVertex() {
-    request_.put("action", "AddVertex");
+    input_.put("action", "AddVertex");
   }
-  Id get(ptree::ptree response) override {
-    return response.get<Id>("id");
-  }
+  struct Id : public Response<Output> {
+    using Response<Output>::Response;
+    static Output value(ptree::ptree output) {
+      return output.get<Output>("id");
+    };
+    Output get(ptree::ptree output) const override {
+      return Id::value(std::move(output));
+    }
+  };
+private:
+  Output get(ptree::ptree output) const override {
+    return Id::value(std::move(output));
+  };
 };
 
 class RemoveVertex : public Action<void> {
 public:
   explicit RemoveVertex(Id id) {
-    request_.put("action", "RemoveVertex");
-    request_.put("id", id);
+    input_.put("action", "RemoveVertex");
+    input_.put("id", id);
   }
 };
 
 class AddEdge : public Action<void> {
 public:
   AddEdge(Id from, Id to, Weight weight) {
-    request_.put("action", "AddEdge");
-    request_.put("from", from);
-    request_.put("to", to);
-    request_.put("weight", weight);
+    input_.put("action", "AddEdge");
+    input_.put("from", from);
+    input_.put("to", to);
+    input_.put("weight", weight);
   }
 };
 
 class RemoveEdge : public Action<void> {
 public:
   RemoveEdge(Id from, Id to) {
-    request_.put("action", "RemoveEdge");
-    request_.put("from", from);
-    request_.put("to", to);
+    input_.put("action", "RemoveEdge");
+    input_.put("from", from);
+    input_.put("to", to);
   }
 };
 
 class GetPath : public Action<std::list<Id>> {
 public:
   GetPath(Id from, Id to) {
-    request_.put("action", "GetPath");
-    request_.put("from", from);
-    request_.put("to", to);
+    input_.put("action", "GetPath");
+    input_.put("from", from);
+    input_.put("to", to);
   }
-  std::list<Id> get(ptree::ptree response) override {
-    std::list<Id> path;
-    for (auto const& i : response.get_child("ids")) {
-      path.push_back(i.second.get_value<Id>());
+  struct Path : public Response<Output> {
+    using Response<Output>::Response;
+    static Output value(ptree::ptree output) {
+      Output path;
+      for (auto const& i : output.get_child("ids")) {
+        path.push_back(i.second.get_value<Id>());
+      }
+      return path;
+    };
+    Output get(ptree::ptree output) const override {
+      return Path::value(output);
     }
-    return path;
+  };
+private:
+  Output get(ptree::ptree output) const override {
+    return Path::value(output);
   }
 };
 }  // namespace spf

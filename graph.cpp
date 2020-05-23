@@ -27,7 +27,7 @@ std::list<Id> Graph::path(Id from, Id to) {
 }
 
 void Graph::addVertex(std::function<void(Id, Error)> callback) {
-  AddVertex{}.execute(service_, callback);
+  AddVertex{}.execute(service_, AddVertex::Id{callback});
 }
 
 void Graph::removeVertex(Id id, std::function<void(Error)> callback) {
@@ -45,6 +45,6 @@ void Graph::removeEdge(Id from, Id to, std::function<void(Error)> callback) {
 
 void Graph::path(Id from, Id to,
     std::function<void(std::list<Id>, Error)> callback) {
-  GetPath{from, to}.execute(service_, callback);
+  GetPath{from, to}.execute(service_, GetPath::Path{callback});
 }
 }  // namespace spf
