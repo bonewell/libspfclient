@@ -30,12 +30,8 @@ void run(Microservice& service) {
 void async_run(Microservice& service) {
   Graph g{service};
 
-  auto add_error = [](Id id, auto error) {
-    if (error) {
-      std::cout << error.what() << '\n';
-    } else {
-      std::cout << "Vertex: " << id << '\n';
-    }
+  auto add_error = [](Id, auto error) {
+    if (error) std::cout << error.what() << '\n';
   };
   g.addVertex(add_error); g.addVertex(add_error); g.addVertex(add_error);
   g.addVertex(add_error); g.addVertex(add_error); g.addVertex(add_error);
