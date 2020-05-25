@@ -1,22 +1,22 @@
 #ifndef GRAPH_H_
 #define GRAPH_H_
 
-#include <boost/property_tree/ptree.hpp>
+#include <functional>
 #include <list>
 
-namespace ptree = boost::property_tree;
+#include "error.h"
+#include "types.h"
 
-using Id = long long unsigned int;
-using Weight = double;
-
+namespace spf {
 class Microservice;
 
+/**
+ * Represents Graph on server.
+ */
 class Graph {
 public:
-  using Error = std::runtime_error;
-
   /**
-   * Connects to microservice.
+   * Creates graph on remote microservice.
    * @param microservice.
    */
   explicit Graph(Microservice& microservice);
@@ -28,10 +28,23 @@ public:
   Id addVertex();
 
   /**
+   * Adds new vertex in graph asynchronously.
+   * @param callback - callback to invoke.
+   */
+  void addVertex(std::function<void(Id, Error)> callback);
+
+  /**
    * Removes vertex and its edges.
    * @param id - the vertex.
    */
   void removeVertex(Id id);
+
+  /**
+   * Removes vertex and its edges.
+   * @param id - the vertex.
+   * @param callback - callback to invoke.
+   */
+  void removeVertex(Id id, std::function<void(Error)> callback);
 
   /**
    * Adds a new edge or update distance of the already existed one.
@@ -42,11 +55,29 @@ public:
   void setEdge(Id from, Id to, Weight weight);
 
   /**
+   * Adds a new edge or update distance of the already existed one.
+   * @param from - begin the edge.
+   * @param to - end of the edge.
+   * @param distance - weight of the edge.
+   * @param callback - callback to invoke.
+   */
+  void setEdge(Id from, Id to, Weight weight,
+      std::function<void(Error)> callback);
+
+  /**
    * Remove edge.
    * @param from - begin the edge.
    * @param to - end of the edge.
    */
   void removeEdge(Id from, Id to);
+
+  /**
+   * Remove edge.
+   * @param from - begin the edge.
+   * @param to - end of the edge.
+   * @param callback - callback to invoke.
+   */
+  void removeEdge(Id from, Id to, std::function<void(Error)> callback);
 
   /**
    * Gets path from a source to a target vertex.
@@ -57,9 +88,19 @@ public:
    */
   std::list<Id> path(Id from, Id to);
 
+  /**
+   * Gets path from a source to a target vertex.
+   * @param from - the source vertex.
+   * @param to - the target vertex.
+   * @param force - calculate distances also if true.
+   * @param callback - callback to invoke.
+   */
+  void path(Id from, Id to,
+      std::function<void(std::list<Id>, Error)> callback);
+
 private:
-  ptree::ptree invoke(ptree::ptree const& request);
   Microservice& service_;
 };
+}  // namespace spf
 
 #endif /* GRAPH_H_ */
