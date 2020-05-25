@@ -11,8 +11,7 @@ namespace beast = boost::beast;
 namespace ws = beast::websocket;
 
 namespace spf {
-WebSocketMicroservice::WebSocketMicroservice(const std::string &host,
-    int port) {
+WebSocketMicroservice::WebSocketMicroservice(std::string const& host, unsigned short port) {
   tcp::resolver resolver{ioc_};
   auto const points = resolver.resolve(host, std::to_string(port));
   beast::get_lowest_layer(wsock_).expires_after(std::chrono::seconds(30));
@@ -20,16 +19,13 @@ WebSocketMicroservice::WebSocketMicroservice(const std::string &host,
   beast::get_lowest_layer(wsock_).expires_never();
   wsock_.set_option(ws::stream_base::timeout::suggested(beast::role_type::client));
   wsock_.handshake(host, "/");
-//  thread_ = std::thread{[this] {
-//    std::cout << "start\n";
-//    for (;;) ioc_.run();
-//    std::cout << "finish\n";
-//  }};
+  thread_ = std::thread([this] { ioc_.run(); });
 }
 
 WebSocketMicroservice::~WebSocketMicroservice() {
-  ioc_.run();
-//  thread_.join();
+  work_.reset();
+  thread_.join();
+  wsock_.close({ws::close_code::normal});
 }
 
 std::string WebSocketMicroservice::invoke(std::string const& request) {

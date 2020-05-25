@@ -16,7 +16,7 @@ class Microservice;
 class Graph {
 public:
   /**
-   * Connects to microservice.
+   * Creates graph on remote microservice.
    * @param microservice.
    */
   explicit Graph(Microservice& microservice);

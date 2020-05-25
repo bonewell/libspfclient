@@ -9,7 +9,8 @@ namespace po = boost::program_options;
 
 using namespace spf;
 
-void run(Microservice& service) {
+void run(std::string const& host, unsigned short port) {
+  WebSocketMicroservice service{host, port};
   Graph g{service};
   g.addVertex(); g.addVertex(); g.addVertex(); g.addVertex();
   g.addVertex(); g.addVertex();
@@ -27,7 +28,8 @@ void run(Microservice& service) {
   std::cout << '\n';
 }
 
-void async_run(Microservice& service) {
+void async_run(std::string const& host, unsigned short port) {
+  WebSocketMicroservice service{host, port};
   Graph g{service};
 
   auto add_error = [](Id, auto error) {
@@ -89,11 +91,10 @@ int main(int argc, char* argv[]) {
       return 1;
   }
 
-  WebSocketMicroservice service{host, port};
   if (async) {
-    async_run(service);
+    async_run(host, port);
   } else {
-    run(service);
+    run(host, port);
   }
 
   return 0;

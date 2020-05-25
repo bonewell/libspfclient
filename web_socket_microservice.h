@@ -18,19 +18,20 @@ namespace spf {
 class WebSocketMicroservice: public Microservice {
 public:
   using Handler = std::function<void(std::string, beast::error_code)>;
-  WebSocketMicroservice(std::string const& host, int port);
+  WebSocketMicroservice(std::string const& host, unsigned short port);
   ~WebSocketMicroservice();
   std::string invoke(std::string const& request) override;
   void async_invoke(std::string const& request, Handler handler) override;
 
 private:
   void async_invoke_internal();
-  net::io_context ioc_;
-//  std::thread thread_;
-  net::strand<net::io_context::executor_type> strand_{ioc_.get_executor()};
-  ws::stream<beast::tcp_stream> wsock_{strand_};
   using Action = std::pair<std::string, Handler>;
   std::queue<Action> queue_;
+  net::io_context ioc_;
+  net::executor_work_guard<net::io_context::executor_type> work_{ioc_.get_executor()};
+  net::strand<net::io_context::executor_type> strand_{ioc_.get_executor()};
+  ws::stream<beast::tcp_stream> wsock_{strand_};
+  std::thread thread_;
 };
 }  // namespace spf
 
