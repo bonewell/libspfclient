@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-#include "graph.h"
-#include "web_socket_microservice.h"
+#include "spf/graph.h"
+#include "spf/web_socket_microservice.h"
 
 namespace po = boost::program_options;
 

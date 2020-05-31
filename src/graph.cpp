@@ -1,6 +1,6 @@
-#include "graph.h"
+#include "spf/graph.h"
 
-#include "microservice.h"
+#include "spf/microservice.h"
 #include "action.h"
 
 namespace spf {

@@ -3,7 +3,7 @@
 
 #include <gmock/gmock.h>
 
-#include "microservice.h"
+#include "spf/microservice.h"
 
 namespace spf {
 class MockMicroservice : public Microservice {

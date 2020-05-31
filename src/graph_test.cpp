@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 
 #include "mock_microservice.h"
-#include "graph.h"
+#include "spf/graph.h"
 
 using ::testing::_;
 using ::testing::Eq;

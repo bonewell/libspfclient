@@ -8,9 +8,9 @@
 #include <list>
 #include <type_traits>
 
-#include "error.h"
-#include "microservice.h"
-#include "types.h"
+#include "spf/error.h"
+#include "spf/microservice.h"
+#include "spf/types.h"
 
 namespace ptree = boost::property_tree;
 namespace json = boost::property_tree::json_parser;
