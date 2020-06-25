@@ -1,13 +1,13 @@
-#ifndef MOCK_MICROSERVICE_H_
-#define MOCK_MICROSERVICE_H_
+#ifndef MOCK_RPC_H_
+#define MOCK_RPC_H_
 
 #include <gmock/gmock.h>
 
 #include "spf/error.h"
-#include "spf/microservice.h"
+#include "spf/rpc.h"
 
 namespace spf {
-class MockMicroservice : public Microservice {
+class MockRpc : public Rpc {
 public:
   MOCK_METHOD(std::string, invoke,
       (std::string const& request), (override));
@@ -17,4 +17,4 @@ public:
 };
 }  // namespace spf
 
-#endif /* MOCK_MICROSERVICE_H_ */
+#endif /* MOCK_RPC_H_ */

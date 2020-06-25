@@ -1,5 +1,5 @@
-#ifndef WEB_SOCKET_MICROSERVICE_H_
-#define WEB_SOCKET_MICROSERVICE_H_
+#ifndef WEB_SOCKET_RPC_H_
+#define WEB_SOCKET_RPC_H_
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
@@ -8,18 +8,18 @@
 #include <string>
 #include <thread>
 
-#include "microservice.h"
+#include "rpc.h"
 
 namespace net = boost::asio;
 namespace beast = boost::beast;
 namespace ws = beast::websocket;
 
 namespace spf {
-class WebSocketMicroservice: public Microservice {
+class WebSocketRpc : public Rpc {
 public:
   using Handler = std::function<void(std::string, Error)>;
-  WebSocketMicroservice(std::string const& host, unsigned short port);
-  ~WebSocketMicroservice();
+  WebSocketRpc(std::string const& host, unsigned short port);
+  ~WebSocketRpc();
   std::string invoke(std::string const& request) override;
   void async_invoke(std::string const& request, Handler handler) override;
 
@@ -35,4 +35,4 @@ private:
 };
 }  // namespace spf
 
-#endif /* WEB_SOCKET_MICROSERVICE_H_ */
+#endif /* WEB_SOCKET_RPC_H_ */

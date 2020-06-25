@@ -3,14 +3,14 @@
 #include <iostream>
 
 #include "spf/graph.h"
-#include "spf/web_socket_microservice.h"
+#include "spf/web_socket_rpc.h"
 
 namespace po = boost::program_options;
 
 using namespace spf;
 
 void run(std::string const& host, unsigned short port) {
-  WebSocketMicroservice service{host, port};
+  WebSocketRpc service{host, port};
   Graph g{service};
   g.addVertex(); g.addVertex(); g.addVertex(); g.addVertex();
   g.addVertex(); g.addVertex();
@@ -29,7 +29,7 @@ void run(std::string const& host, unsigned short port) {
 }
 
 void async_run(std::string const& host, unsigned short port) {
-  WebSocketMicroservice service{host, port};
+  WebSocketRpc service{host, port};
   Graph g{service};
 
   auto add_error = [](Id, auto error) {

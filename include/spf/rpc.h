@@ -1,5 +1,5 @@
-#ifndef MICROSERVICE_H_
-#define MICROSERVICE_H_
+#ifndef RPC_H_
+#define RPC_H_
 
 #include <functional>
 #include <string>
@@ -7,9 +7,9 @@
 #include "error.h"
 
 namespace spf {
-class Microservice {
+class Rpc {
 public:
-  virtual ~Microservice() = default;
+  virtual ~Rpc() = default;
 
   /**
    * Invokes microservice synchronously.
@@ -28,4 +28,4 @@ public:
 };
 }  // namespace spf
 
-#endif /* MICROSERVICE_H_ */
+#endif /* RPC_H_ */

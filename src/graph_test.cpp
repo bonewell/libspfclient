@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "mock_microservice.h"
+#include "mock_rpc.h"
 #include "spf/graph.h"
 
 using ::testing::_;
@@ -12,7 +12,7 @@ using ::testing::Return;
 using namespace spf;
 
 TEST(Graph, AddVertex) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, invoke(R"({"action":"AddVertex"})"))
@@ -22,7 +22,7 @@ TEST(Graph, AddVertex) {
 }
 
 TEST(Graph, AddVertexWithError) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, invoke(_)).WillOnce(Return(R"({"error":"Internal error"})"));
@@ -31,7 +31,7 @@ TEST(Graph, AddVertexWithError) {
 }
 
 TEST(Graph, RemoveVertex) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, invoke(R"({"action":"RemoveVertex","id":"1"})"))
@@ -41,7 +41,7 @@ TEST(Graph, RemoveVertex) {
 }
 
 TEST(Graph, RemoveVertexWithError) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, invoke(_)).WillOnce(Return(R"({"error":"Wrong ID"})"));
@@ -50,7 +50,7 @@ TEST(Graph, RemoveVertexWithError) {
 }
 
 TEST(Graph, SetEdge) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock,
@@ -61,7 +61,7 @@ TEST(Graph, SetEdge) {
 }
 
 TEST(Graph, SetEdgeWithError) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, invoke(_)).WillOnce(Return(R"({"error":"Wrong vertex ID"})"));
@@ -70,7 +70,7 @@ TEST(Graph, SetEdgeWithError) {
 }
 
 TEST(Graph, RemoveEdge) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock,
@@ -81,7 +81,7 @@ TEST(Graph, RemoveEdge) {
 }
 
 TEST(Graph, RemoveEdgeWithError) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, invoke(_)).WillOnce(Return(R"({"error":"Wrong vertex ID"})"));
@@ -90,7 +90,7 @@ TEST(Graph, RemoveEdgeWithError) {
 }
 
 TEST(Graph, GetPath) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, invoke(R"({"action":"GetPath","from":"0","to":"4"})"))
@@ -100,7 +100,7 @@ TEST(Graph, GetPath) {
 }
 
 TEST(Graph, GetPathWithError) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, invoke(_)).WillOnce(Return(R"({"error":"Wrong ID"})"));
@@ -109,7 +109,7 @@ TEST(Graph, GetPathWithError) {
 }
 
 TEST(Graph, AddVertexAsync) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, async_invoke(R"({"action":"AddVertex"})", _))
@@ -123,7 +123,7 @@ TEST(Graph, AddVertexAsync) {
 }
 
 TEST(Graph, AddVertexAsyncWithError) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, async_invoke(_, _))
@@ -137,7 +137,7 @@ TEST(Graph, AddVertexAsyncWithError) {
 }
 
 TEST(Graph, RemoveVertexAsync) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, async_invoke(R"({"action":"RemoveVertex","id":"1"})", _))
@@ -151,7 +151,7 @@ TEST(Graph, RemoveVertexAsync) {
 }
 
 TEST(Graph, RemoveVertexAsyncWithError) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, async_invoke(_, _))
@@ -165,7 +165,7 @@ TEST(Graph, RemoveVertexAsyncWithError) {
 }
 
 TEST(Graph, SetEdgeAsync) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock,
@@ -180,7 +180,7 @@ TEST(Graph, SetEdgeAsync) {
 }
 
 TEST(Graph, SetEdgeAsyncWithError) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, async_invoke(_, _))
@@ -194,7 +194,7 @@ TEST(Graph, SetEdgeAsyncWithError) {
 }
 
 TEST(Graph, RemoveEdgeAsync) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock,
@@ -209,7 +209,7 @@ TEST(Graph, RemoveEdgeAsync) {
 }
 
 TEST(Graph, RemoveEdgeAsyncWithError) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, async_invoke(_, _))
@@ -223,7 +223,7 @@ TEST(Graph, RemoveEdgeAsyncWithError) {
 }
 
 TEST(Graph, GetPathAsync) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock,
@@ -238,7 +238,7 @@ TEST(Graph, GetPathAsync) {
 }
 
 TEST(Graph, GetPathAsyncWithError) {
-  MockMicroservice mock;
+  MockRpc mock;
   Graph g{mock};
 
   EXPECT_CALL(mock, async_invoke(_, _))

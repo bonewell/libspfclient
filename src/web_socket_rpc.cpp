@@ -1,4 +1,4 @@
-#include "spf/web_socket_microservice.h"
+#include "spf/web_socket_rpc.h"
 
 #include "spf/error.h"
 
@@ -13,7 +13,7 @@ namespace beast = boost::beast;
 namespace ws = beast::websocket;
 
 namespace spf {
-WebSocketMicroservice::WebSocketMicroservice(std::string const& host, unsigned short port) {
+WebSocketRpc::WebSocketRpc(std::string const& host, unsigned short port) {
   tcp::resolver resolver{ioc_};
   auto const points = resolver.resolve(host, std::to_string(port));
   beast::get_lowest_layer(wsock_).expires_after(std::chrono::seconds(30));
@@ -24,25 +24,25 @@ WebSocketMicroservice::WebSocketMicroservice(std::string const& host, unsigned s
   thread_ = std::thread([this] { ioc_.run(); });
 }
 
-WebSocketMicroservice::~WebSocketMicroservice() {
+WebSocketRpc::~WebSocketRpc() {
   work_.reset();
   thread_.join();
   wsock_.close({ws::close_code::normal});
 }
 
-std::string WebSocketMicroservice::invoke(std::string const& request) {
+std::string WebSocketRpc::invoke(std::string const& request) {
   wsock_.write(net::buffer(request));
   beast::flat_buffer ibuf;
   wsock_.read(ibuf);
   return beast::buffers_to_string(ibuf.data());
 }
 
-void WebSocketMicroservice::async_invoke(std::string const& request, Handler handler) {
+void WebSocketRpc::async_invoke(std::string const& request, Handler handler) {
   queue_.emplace(request, handler);
   if (queue_.size() == 1) async_invoke_internal();
 }
 
-void WebSocketMicroservice::async_invoke_internal() {
+void WebSocketRpc::async_invoke_internal() {
   net::spawn(strand_, [this](net::yield_context yield) {
     auto const& [request, handler] = queue_.front();
     beast::error_code ec;
