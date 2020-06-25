@@ -3,7 +3,6 @@
 
 #include <gmock/gmock.h>
 
-#include "spf/error.h"
 #include "spf/rpc.h"
 
 namespace spf {
@@ -12,8 +11,7 @@ public:
   MOCK_METHOD(std::string, invoke,
       (std::string const& request), (override));
   MOCK_METHOD(void, async_invoke,
-      (std::string const& request,
-          std::function<void(std::string, Error)> handler), (override));
+      (std::string const& request, Handler handler), (override));
 };
 }  // namespace spf
 

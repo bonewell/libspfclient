@@ -1,6 +1,7 @@
 #include <boost/program_options.hpp>
 
 #include <iostream>
+#include <string>
 
 #include "spf/graph.h"
 #include "spf/web_socket_rpc.h"

@@ -9,6 +9,8 @@
 namespace spf {
 class Rpc {
 public:
+  using Handler = std::function<void(std::string, Error)>;
+
   virtual ~Rpc() = default;
 
   /**
@@ -23,8 +25,7 @@ public:
    * @param request - request to serve.
    * @param handler - callback to get response.
    */
-  virtual void async_invoke(std::string const& request,
-      std::function<void(std::string, Error)> handler) = 0;
+  virtual void async_invoke(std::string const& request, Handler handler) = 0;
 };
 }  // namespace spf
 
