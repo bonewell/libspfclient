@@ -74,7 +74,7 @@ public:
       std::function<void(Error)> error_handler) try {
     service.async_invoke(request(input_),
         [response_handler, error_handler](auto output, auto error) {
-      if (error) return error_handler(Error{error.message()});
+      if (error) return error_handler(error);
       try {
         auto res = response(output);
         check(res);

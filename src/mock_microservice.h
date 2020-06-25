@@ -3,6 +3,7 @@
 
 #include <gmock/gmock.h>
 
+#include "spf/error.h"
 #include "spf/microservice.h"
 
 namespace spf {
@@ -12,7 +13,7 @@ public:
       (std::string const& request), (override));
   MOCK_METHOD(void, async_invoke,
       (std::string const& request,
-          std::function<void(std::string, boost::beast::error_code)> handler), (override));
+          std::function<void(std::string, Error)> handler), (override));
 };
 }  // namespace spf
 

@@ -1,5 +1,7 @@
 #include "spf/web_socket_microservice.h"
 
+#include "spf/error.h"
+
 #include <boost/beast.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/spawn.hpp>
@@ -45,11 +47,11 @@ void WebSocketMicroservice::async_invoke_internal() {
     auto const& [request, handler] = queue_.front();
     beast::error_code ec;
     wsock_.async_write(net::buffer(request), yield[ec]);
-    if (ec) return handler("", ec);
+    if (ec) return handler("", Error{ec.message()});
     beast::flat_buffer ibuf;
     wsock_.async_read(ibuf, yield[ec]);
     if (ec == ws::error::closed) return;
-    if (ec) return handler("", ec);
+    if (ec) return handler("", Error{ec.message()});
     auto response = beast::buffers_to_string(ibuf.data());
     handler(response, {});
     queue_.pop();

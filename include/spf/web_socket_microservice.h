@@ -17,7 +17,7 @@ namespace ws = beast::websocket;
 namespace spf {
 class WebSocketMicroservice: public Microservice {
 public:
-  using Handler = std::function<void(std::string, beast::error_code)>;
+  using Handler = std::function<void(std::string, Error)>;
   WebSocketMicroservice(std::string const& host, unsigned short port);
   ~WebSocketMicroservice();
   std::string invoke(std::string const& request) override;
