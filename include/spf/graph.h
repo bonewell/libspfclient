@@ -8,7 +8,7 @@
 #include "types.h"
 
 namespace spf {
-class Microservice;
+class Rpc;
 
 /**
  * Represents Graph on server.
@@ -19,7 +19,7 @@ public:
    * Creates graph on remote microservice.
    * @param microservice.
    */
-  explicit Graph(Microservice& microservice);
+  explicit Graph(Rpc& microservice);
 
   /**
    * Adds new vertex in graph.
@@ -99,7 +99,7 @@ public:
       std::function<void(std::list<Id>, Error)> callback);
 
 private:
-  Microservice& service_;
+  Rpc& service_;
 };
 }  // namespace spf
 

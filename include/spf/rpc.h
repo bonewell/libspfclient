@@ -1,17 +1,17 @@
-#ifndef MICROSERVICE_H_
-#define MICROSERVICE_H_
-
-#include <boost/beast.hpp>
+#ifndef RPC_H_
+#define RPC_H_
 
 #include <functional>
 #include <string>
 
-namespace beast = boost::beast;
+#include "error.h"
 
 namespace spf {
-class Microservice {
+class Rpc {
 public:
-  virtual ~Microservice() = default;
+  using Handler = std::function<void(std::string, Error)>;
+
+  virtual ~Rpc() = default;
 
   /**
    * Invokes microservice synchronously.
@@ -25,9 +25,8 @@ public:
    * @param request - request to serve.
    * @param handler - callback to get response.
    */
-  virtual void async_invoke(std::string const& request,
-      std::function<void(std::string, beast::error_code)> handler) = 0;
+  virtual void async_invoke(std::string const& request, Handler handler) = 0;
 };
 }  // namespace spf
 
-#endif /* MICROSERVICE_H_ */
+#endif /* RPC_H_ */
