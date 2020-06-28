@@ -9,7 +9,7 @@
 #include <type_traits>
 
 #include "spf/error.h"
-#include "spf/microservice.h"
+#include "spf/rpc.h"
 #include "spf/types.h"
 
 namespace ptree = boost::property_tree;
@@ -63,18 +63,18 @@ class ActionBase {
 public:
   virtual ~ActionBase() = default;
 
-  ptree::ptree invoke(Microservice& service) {
+  ptree::ptree invoke(Rpc& service) {
     auto res = response(service.invoke(request(input_)));
     check(res);
     return res;
   }
 
-  void async_invoke(Microservice& service,
+  void async_invoke(Rpc& service,
       std::function<void(ptree::ptree)> response_handler,
       std::function<void(Error)> error_handler) try {
     service.async_invoke(request(input_),
         [response_handler, error_handler](auto output, auto error) {
-      if (error) return error_handler(Error{error.message()});
+      if (error) return error_handler(error);
       try {
         auto res = response(output);
         check(res);
@@ -103,12 +103,12 @@ public:
   virtual ~Action() = default;
   virtual Output get(ptree::ptree output) const = 0;
 
-  Output execute(Microservice& service) {
+  Output execute(Rpc& service) {
     return get(invoke(service));
   }
 
   template<typename C>
-  void execute(Microservice& service,
+  void execute(Rpc& service,
       C callback) {
     async_invoke(service,
         [callback](auto res) { callback(std::move(res), {}); },
@@ -119,11 +119,11 @@ public:
 template<>
 class Action<void> : public ActionBase {
 public:
-  void execute(Microservice& service) {
+  void execute(Rpc& service) {
     invoke(service);
   }
 
-  void execute(Microservice& service,
+  void execute(Rpc& service,
       std::function<void(Error)> callback) {
     async_invoke(service,
         [callback](auto) { callback({}); },

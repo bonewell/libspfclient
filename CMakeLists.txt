@@ -7,7 +7,7 @@ conan_basic_setup(TARGETS)
 
 add_library(objlib OBJECT
   "src/graph.cpp"
-  "src/web_socket_microservice.cpp"
+  "src/web_socket_rpc.cpp"
 )
 target_compile_features(objlib PRIVATE cxx_std_17)
 target_link_libraries(objlib PRIVATE
@@ -46,7 +46,6 @@ add_executable(${UNIT_TEST}
 target_compile_features(${UNIT_TEST} PRIVATE cxx_std_17)
 target_link_libraries(${UNIT_TEST} PRIVATE
   CONAN_PKG::gtest
-  CONAN_PKG::boost
   SPF::client_static
 )
 add_test(NAME ${UNIT_TEST} COMMAND ${UNIT_TEST})

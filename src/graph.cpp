@@ -1,10 +1,10 @@
 #include "spf/graph.h"
 
-#include "spf/microservice.h"
 #include "action.h"
+#include "spf/rpc.h"
 
 namespace spf {
-Graph::Graph(Microservice& service) : service_{service} {}
+Graph::Graph(Rpc& service) : service_{service} {}
 
 Id Graph::addVertex() {
   return AddVertex{}.execute(service_);
